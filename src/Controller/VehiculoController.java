@@ -133,5 +133,13 @@ import Model.Vehiculo;
 		return null;
 	}
 
+	public void cerrarConexion() {
+		try {
+			con.close();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+	}
 	
 }

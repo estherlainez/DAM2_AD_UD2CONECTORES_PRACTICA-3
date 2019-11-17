@@ -10,12 +10,17 @@ import Model.Venta;
 public class Main {
 	public static String  url="jdbc:mysql://localhost/initiald";
 	public static String user="root";
+	//public static String password="";
 	public static String password="12345678";
 	public static void main(String[] args) {
 		
 		Scanner teclado=new Scanner(System.in);
 		int opcion;
 		String ma="",mar="",mo="",dni="",nombre="",apellidos="";
+		VehiculoController vc=new VehiculoController();
+		ClienteController cc=new ClienteController();
+		VentaController vcon=new VentaController();
+		
 		double p=0;
 		do {
 			System.out.println("TALLER DE VEHICULOS");
@@ -29,7 +34,7 @@ public class Main {
 			System.out.println("8.Mostar un cliente segun su Dni");
 			System.out.println("9.Realizar una venta");
 			System.out.println("10.Mostrar ventas");
-			System.out.println("11.Mostrar las ventas de un dia concreto");
+			System.out.println("11.Mostrar las ventas de un dia concreto y total de venta del dia");
 			System.out.println("12.Salir");
 		
 			opcion=teclado.nextInt();
@@ -47,7 +52,7 @@ public class Main {
 				System.out.println("Precio");
 				p=teclado.nextDouble();
 				Vehiculo v=new Vehiculo(ma,mar,mo,p);
-				VehiculoController vc=new VehiculoController();
+				vc=new VehiculoController();
 				if(vc.insertarVehiculo(v)) {
 					System.out.println("Vehiculo guardado");
 				}else {
@@ -89,7 +94,12 @@ public class Main {
 				Vehiculo vehiculo=new Vehiculo();
 				vehiculo=control.informacionDelVehiculo(maBuscar);
 				
-				System.out.println(vehiculo.toString());
+				if(vehiculo==null) {
+					System.out.println("Este vehiculo no esta en la base de datos");
+				}else {
+					System.out.println(vehiculo.toString());
+				}
+				
 				
 				break;
 			case 4:
@@ -98,11 +108,15 @@ public class Main {
 				teclado.nextLine();
 				String marcaB=teclado.nextLine();
 				ArrayList <Vehiculo> vehiculosTaller=new ArrayList<Vehiculo>();
-				VehiculoController cont=new VehiculoController();
-				vehiculosTaller=cont.mostrarVehiculos(marcaB);
+				vc=new VehiculoController();
+				vehiculosTaller=vc.mostrarVehiculos(marcaB);
 				
-				for(Vehiculo veh: vehiculosTaller) {
-					System.out.println(veh.toString());
+				if(vehiculosTaller.size()==0) {
+					System.out.println("Esta marca no esta en la base de datos");
+				}else {
+					for(Vehiculo veh: vehiculosTaller) {
+						System.out.println(veh.toString());
+					}
 				}
 				break;
 				
@@ -116,7 +130,7 @@ public class Main {
 				System.out.println("Introduzca apellidos:");
 				apellidos=teclado.nextLine();
 				Cliente cli=new Cliente(dni,nombre,apellidos);
-				ClienteController cc=new ClienteController();
+				cc=new ClienteController();
 				if(cc.insertarCliente(cli)==true) {
 					System.out.println("Los datos del cliente se guardaron");
 				}else {
@@ -139,8 +153,8 @@ public class Main {
 				cl.setDni(dni);
 				cl.setNombre(nombre);
 				cl.setApellidos(apellidos);
-				ClienteController clicon=new ClienteController();
-				if(clicon.modificarCliente(cl, dniB)==true) {
+				cc=new ClienteController();
+				if(cc.modificarCliente(cl, dniB)==true) {
 					System.out.println("Los datos del cliente se modificaron");
 				}else {
 					System.out.println("Error, algo fallo");
@@ -148,9 +162,9 @@ public class Main {
 				break;
 			case 7:
 				System.out.println("Listar clientes");
-				ClienteController cco=new ClienteController();
+				cc=new ClienteController();
 				ArrayList<Cliente>clientes=new ArrayList<Cliente>();
-				clientes=cco.mostrarClientes();
+				clientes=cc.mostrarClientes();
 				for(Cliente clie:clientes) {
 					System.out.println(clie.toString());
 				}
@@ -159,23 +173,24 @@ public class Main {
 				System.out.println("Introduzca dni del cliente que solicita informacion:");
 				teclado.nextLine();
 				String dniBuscar=teclado.nextLine();
-				ClienteController c1=new ClienteController();
-				ArrayList<Cliente>clienteBuscar=new ArrayList<Cliente>();
-				clienteBuscar=c1.mostrarClientePorDni(dniBuscar);
-				
-				for(Cliente cli1:clienteBuscar) {
-					System.out.println(cli1.toString());
+				cc=new ClienteController();
+			
+				Cliente c=cc.buscarClientePorDni(dniBuscar);
+				if(c==null) {
+					System.out.println("Este cliente no esta en la base de datos");
+				}else {
+					System.out.println(c.toString());
 				}
 				break;
 			case 9:
 				System.out.println("Verificando la matricula, introduce para comprobar:");	
 				teclado.nextLine();
 				ma=teclado.nextLine();
-				//int disponibilidad=comprobarDisponibilidadVehiculoEnTaller( ma);
-				VentaController cv=new VentaController();
-				int num=cv.verificarMatriculaVehiculos(ma);
-				//System.out.println(disponibilidad+"---------------------------"+num);
-				//if(disponibilidad==1) {
+				int disponibilidad=comprobarDisponibilidadVehiculoEnTaller( ma);
+				vcon=new VentaController();
+				int num=vcon.verificarMatriculaVehiculos(ma);
+				System.out.println(disponibilidad+"---------------------------"+num);
+				if(disponibilidad==1) {
 					int verificacion=comprobarMatricula(ma);
 					
 					if(verificacion==0) {
@@ -199,9 +214,9 @@ public class Main {
 						LocalDate fechaVenta= LocalDate.of(Integer.valueOf(fechas[0]), Integer.valueOf(fechas[1]), Integer.valueOf(fechas[2]));
 						
 						Venta venta=new Venta(id,ma,dni,des,motivo,fechaVenta);
-						VentaController vco=new VentaController();
+						vcon=new VentaController();
 						
-						if(vco.insertarVenta(venta)==true) {
+						if(vcon.insertarVenta(venta)==true) {
 							System.out.println("Venta realizada");
 						}else {
 							System.out.println("La venta no se realizo");
@@ -209,15 +224,15 @@ public class Main {
 					}else if(verificacion==1) {
 						System.out.println("Ya hay una venta con esa matricula, no se puede hacer");
 					}
-				//}else if(disponibilidad==0) {
-					//System.out.println("El vehiculo no se encuentra aqui");
-				//}
+				}else if(disponibilidad==0) {
+					System.out.println("El vehiculo no se encuentra aqui disponible");
+				}
 				break;
 			case 10:
 				System.out.println("Listar ventas");
-			    VentaController venco=new VentaController();
+				vcon=new VentaController();
 				ArrayList<Venta>ventas=new ArrayList<Venta>();
-				ventas=venco.listarVentas();
+				ventas=vcon.listarVentas();
 				for(Venta ven:ventas) {
 					System.out.println(ven.toString());
 				}
@@ -230,19 +245,27 @@ public class Main {
 				String fechasConsulta[]=fechaConsultar.split("/");
 				
 				LocalDate fechaV= LocalDate.of(Integer.valueOf(fechasConsulta[0]), Integer.valueOf(fechasConsulta[1]), Integer.valueOf(fechasConsulta[2]));
-				VentaController controlV=new VentaController();
+				vcon=new VentaController();
 				ArrayList<Venta>ventasDia=new ArrayList<Venta>();
-				ventasDia=controlV.listadoVentas(fechaV);
-				System.out.println("Dia "+fechaConsultar);
+				ventasDia=vcon.listadoVentas(fechaV);
+				System.out.println("\n Dia "+fechaConsultar);
 				for(Venta ven:ventasDia) {
 					System.out.println(ven.toString());
 				}
-				break;
-			case 12:
-				System.out.println("Ha salido del taller, buen dia!!");
-				break;
-			case 13:
 				
+				vcon=new VentaController();
+				double suma=vcon.sumaPreciosVenta(fechaV);
+				
+				System.out.println("-----TOTAL-------"+suma+"EUROS/DIA \n");
+
+				break;
+		
+			case 12:
+		
+				System.out.println("Ha salido del taller, buen dia!!");
+				vcon.cerrarConexion();
+				cc.cerrarConexion();
+				vc.cerrarConexion();
 				break;
 				
 			}
@@ -251,9 +274,9 @@ public class Main {
 	}
 	
 	public static int comprobarDisponibilidadVehiculoEnTaller(String matricula) {
-		boolean disponible=true;
+		
 		VentaController g=new VentaController();
-		int existe=g.verificarMatriculaListaVentas(matricula);
+		int existe=g.verificarMatriculaVehiculos(matricula);
 		if(existe==0) {
 			System.out.println("El vehiculo no se encuentra en este taller");
 		}

@@ -138,7 +138,7 @@ public class VentaController {
 	}
 	
 	public int verificarMatriculaVehiculos(String ma) {
-		String sql="select count(*) from vehiculo where vehiculo.matricula= ?";
+		String sql="select count(*) AS CONTAR from vehiculo where vehiculo.matricula= ?";
 		int n=0;
 		try {
 	
@@ -147,7 +147,7 @@ public class VentaController {
 			
 			ResultSet re=sentencia.executeQuery();
 			if(re.next()) {
-				n=re.getInt(1);
+				n=re.getInt("CONTAR");
 				
 			}
 			sentencia.close();
@@ -159,9 +159,38 @@ public class VentaController {
 		return n;
 		
 	}
-	public double sumaPreciosVenta() {
+	public double sumaPreciosVenta(LocalDate fecha) {
+		String sql="SELECT SUM((vehiculo.precio-ventas.descuento)) as precioFinal FROM vehiculo, ventas WHERE vehiculo.matricula=ventas.matricula AND VENTAS.FECHA= ?";
+		double suma = 0;
 		
-		return 0;
+		try {
+			PreparedStatement st=con.prepareStatement(sql);
+			st.setDate(1, java.sql.Date.valueOf(fecha));
+			
+			
+			ResultSet rs =st.executeQuery();
+			if(rs.next()) {
+				double valor=rs.getDouble("precioFinal");
+				suma+=valor;
+			}
+			
+			st.close();
+			
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
 		
+	
+		return suma;
+		
+	}
+	public void cerrarConexion() {
+		try {
+			this.con.close();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
 	}
 }

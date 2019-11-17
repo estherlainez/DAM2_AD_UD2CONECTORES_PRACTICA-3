@@ -94,28 +94,41 @@ public class ClienteController {
 		return null;
 	}
 	
-	public ArrayList<Cliente>mostrarClientePorDni(String dniB){
-			String sql="select * from clientes where clientes.dni=?";
-			try {
-				PreparedStatement pre=con.prepareStatement(sql);
-				pre.setString(1, dniB);
-				ResultSet r=pre.executeQuery();
-				ArrayList<Cliente>clientes=new ArrayList<Cliente>();
-				while(r.next()) {
-					String d=r.getNString("dni");
-					String n=r.getString("nombre");
-					String a=r.getString("apellidos");
-					clientes.add(new Cliente(d,n,a));
-					
-				}
-				r.close();
+	public Cliente buscarClientePorDni(String dniB) {
+		String sql="select * from clientes where clientes.dni=?";
+		Cliente cliente=null;
+		try {
+			PreparedStatement pre=con.prepareStatement(sql);
+			pre.setString(1, dniB);
+			ResultSet r=pre.executeQuery();
+			
+			while(r.next()) {
+				String d=r.getNString("dni");
+				String n=r.getString("nombre");
+				String a=r.getString("apellidos");
+				cliente=new Cliente(d,n,a);
 				
-				return clientes;
-			} catch (SQLException e) {
-				e.printStackTrace();
 			}
+			r.close();
+			return cliente;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 		return null;
-		
 	}
+	
+	
+
+	public void cerrarConexion() {
+		try {
+			con.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 
 }
